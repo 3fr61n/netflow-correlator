@@ -1,0 +1,49 @@
+#!/bin/bash
+# All-in-One install script
+#
+#  Copyright (c) 2013-2015 Cisco Systems, Inc. and others.  All rights reserved.
+#
+#  This program and the accompanying materials are made available under the
+#  terms of the Eclipse Public License v1.0 which accompanies this distribution,
+#  and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+# Author: Tim Evens <tim@openbmp.org>
+
+#
+# Defaults
+#
+
+# Disable interactive
+export DEBIAN_FRONTEND=noninteractive
+
+# General depend install
+
+apk add --update wget unzip openjdk7-jre-base rsyslog && rm -rf /var/cache/apk/*
+
+
+# --
+# -- Kafka
+# --
+mkdir /usr/local/kafka
+cd /tmp
+wget http://mirror.cc.columbia.edu/pub/software/apache/kafka/0.10.0.1/kafka_2.11-0.10.0.1.tgz
+tar xzf kafka_2.11-0.10.0.1.tgz
+cd kafka_2.11-0.10.0.1
+mv * /usr/local/kafka/
+cd /usr/local/kafka/
+rm -rf /tmp/kafka_2.11-0.10.0.1*
+
+# Create the logs dir for Kafka topics
+mkdir -m 0750 /var/kafka
+
+# Update config
+sed -i -r 's/^[#]*log.dirs=.*/log.dirs=\/data\/kafka\/logs/' config/server.properties
+sed -i -r 's/^[#]*log.retention.minutes=.*/log.retention.minutes=10/' config/server.properties
+sed -i -r 's/^[#]*num.partitions=.*/num.partitions=6/' config/server.properties
+
+# --
+# -- Clean up
+# --
+rm -rf /var/cache/apk/*
+rm -rf /var/lib/apt/lists/* /var/tmp/*
+rm -f /tmp/install
