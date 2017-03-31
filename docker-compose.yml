@@ -27,9 +27,9 @@ services:
     depends_on:
       - kafka
 
-  bmp_db_1:
+  bmp_db:
     image: openbmp/mysql
-    container_name: bmp_db_1
+    container_name: bmp_db
     environment:
       - "KAFKA_FQDN=kafka"
       - "MYSQL_ROOT_PASSWORD=openbmp"
@@ -47,28 +47,19 @@ services:
     depends_on:
       - kafka
 
-
-
-
-#  bmp_db_2:
-#    image: openbmp/mysql
-#    container_name: bmp_db_2
-#    environment:
-#      - "KAFKA_FQDN=kafka"
-#      - "MYSQL_ROOT_PASSWORD=openbmp"
-#      - "MEM=4"
-#      - "REINIT_DB=1"
-#    volumes:
-#      - mysql_2:/data/mysql 
-#      - /etc/localtime:/etc/localtime
-#    ports:
-#      - "3307:3306"
-#      - "8002:8001"
-#    expose:
-#      - "3306"
-#      - "8001"
-#    depends_on:
-#      - kafka
+  network-rib:
+    build: network-rib/
+    container_name: network-rib
+    environment:
+      - "NETWORK_RIB_REST_API_PORT=4000"
+      - "NETWORK_RIB_REST_API_USER=juniper"
+      - "NETWORK_RIB_REST_API_PASSWORD=juniper"
+    volumes:
+      - /etc/localtime:/etc/localtime
+    ports:
+      - "4000:4000"
+    expose:
+      - "4000"
 
   netflow-correlator_1:
     build: netflow-correlator/
@@ -152,36 +143,20 @@ services:
     ports:
      - "9995:9995/udp"
 
-  netflow-collector_dummy:
-    build: netflow-collector/
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-     - "SERVICES_CLIENT=9995"
-     - "KAFKA_ADDR=xxxxx"
-     - "KAFKA_PORT=9092"
-     - "KAFKA_PRODUCER_TOPIC=xxxxx"
-     - "NETFLOW_PORT=8888"
-    expose:
-      - "9995/udp"
-    depends_on:
-      - kafka
-
-
-
-#  kafka-manager:
-#    image: dockerkafka/kafka-manager
-#    #build: kafka-manager
-#    container_name: kafka-manager
-#    environment:
-#     - "ZK_HOSTS=kafka:2181"
+#  netflow-collector_dummy:
+#    build: netflow-collector/
 #    volumes:
-#     - /etc/localtime:/etc/localtime
-#    ports:
-#     - "9000:9000"
+#      - /etc/localtime:/etc/localtime:ro
+#    environment:
+#     - "SERVICES_CLIENT=9995"
+#     - "KAFKA_ADDR=xxxxx"
+#     - "KAFKA_PORT=9092"
+#     - "KAFKA_PRODUCER_TOPIC=xxxxx"
+#     - "NETFLOW_PORT=8888"
+#    expose:
+#      - "9995/udp"
 #    depends_on:
 #      - kafka
-
 
 
 #######################
@@ -194,3 +169,4 @@ volumes:
   mysql_2:
   kafka:
   bmp_collector:
+
