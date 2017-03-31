@@ -143,21 +143,17 @@ def resolve_all_pnh (**kwargs):
     global pnhs
     
     router = kwargs['router']
-    #pnh = kwargs['pnh']
     logger.info('Start to resolve all pnhs for peer %s',router)
     lsp_install_data = {}
     igp_data = {}
-#
+
 #    # Load json containing lsp-install mapping
     dirpath = BASE_DIR + '/lsp-install/'
     filename = 'lsp_install.json'
     path = os.path.join (dirpath,filename)
-#
+
     with open(path) as lsp_install_file:
         lsp_install_data = json.load(lsp_install_file)
-
-    print "lsp_install_data:"
-    pprint(lsp_install_data)
 
 #    # Load json containing igp mapping
     dirpath = BASE_DIR + '/igp-resolve/'
@@ -167,24 +163,19 @@ def resolve_all_pnh (**kwargs):
     with open(path) as igp_file:
         igp_data = json.load(igp_file)
 
-    print "igp_data:"
-    pprint(igp_data)
-    nhs_tmp = []
     logger.info('This are all PNHS to resolve: %s for peer %s', pnhs[router],router)
     for pnh in pnhs[router].keys():
+        nhs_tmp = []
         logger.info('Resolving pnh %s on peer %s', pnh, router)
         
-        #print ''.join(lsp_install_data[router].keys())
         if lsp_install_data[router].has_key(pnh):
             tmp = lsp_install_data[router][pnh]
-#        if ''.join(lsp_install_data[router].keys()) == pnh:
-            print "el tmp es " + str(tmp)
             for endpoint_tmp in tmp['endpoint']:
                 tmp2 = {}
                 tmp2['endpoint'] = str(endpoint_tmp)
                 tmp2['links'] = 1
                 tmp2['resolved-via'] = str(tmp['lsp_name'])
-                nhs_tmp.append(tmp2)                           
+                nhs_tmp.append(tmp2)                         
         else:
             clean_pnh = pnh.split('/')[0]
             if router != clean_pnh:
@@ -195,8 +186,8 @@ def resolve_all_pnh (**kwargs):
                     tmp2['links'] = 1
                     tmp2['resolved-via'] = 'igp'
                     nhs_tmp.append(tmp2)
-
-    pnhs[router] = {pnh:nhs_tmp} 
+        pnhs[router][pnh] = nhs_tmp 
+    #pprint(pnhs[router])
 
 def export_rib_to_file(**kwargs):
     global ribs
@@ -221,5 +212,4 @@ for peer_ip in pnhs:
     resolve_all_pnh(router=peer_ip)
 
 export_rib_to_file(ribs_output_file='ribs.yaml',pnhs_output_file='pnhs.yaml')
-
 
