@@ -1,0 +1,54 @@
+#!/bin/bash
+# All-in-One run script
+#
+#  Copyright (c) 2013-2015 Cisco Systems, Inc. and others.  All rights reserved.
+#
+#  This program and the accompanying materials are made available under the
+#  terms of the Eclipse Public License v1.0 which accompanies this distribution,
+#  and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+# Author: Tim Evens <tim@openbmp.org>
+#
+
+#
+# System info
+#
+if [[ ${MEM:-""} = "" ]]; then    
+    SYS_TOTAL_MEM=$(grep MemTotal /proc/meminfo | awk '{print int($2 / 1000)}')
+else
+    SYS_TOTAL_MEM=$(($MEM * 1024))
+fi
+
+SYS_NUM_CPU=$(grep processor /proc/cpuinfo | wc -l)
+
+
+
+
+# Start services
+rsyslogd
+crond
+
+#
+# Update kafka fqdn/hostname
+#
+if [[ ${API_FQDN:-""} = "" ]]; then
+    API_FQDN=localhost
+
+elif [[ ${API_FQDN} == "::1" ]]; then
+    API_FQDN="localhost"
+
+else
+    # Update kafka config
+    sed -i -r "s/^[#]*advertised.host.name=.*/advertised.host.name=${KAFKA_FQDN}/" \
+            /usr/local/kafka/config/server.properties
+    sed -i -r "s/^[#]*advertised.listeners=(.*):\/\/.*/advertised.listeners=\1:\/\/${API_FQDN}:9092/" \
+        /usr/local/kafka/config/server.properties
+fi
+
+# Start Kafka
+rm -rf /tmp/zookeeper
+rm -rf /data/kafka/*
+cd /usr/local/kafka
+bin/zookeeper-server-start.sh config/zookeeper.properties > /var/log/zookeeper.log &
+sleep 8
+JMX_PORT=9999 bin/kafka-server-start.sh config/server.properties > /var/log/kafka.log
