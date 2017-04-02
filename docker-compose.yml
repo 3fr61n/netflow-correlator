@@ -51,6 +51,10 @@ services:
     build: network-rib/
     container_name: network-rib
     environment:
+      - "OPENBMP_REST_ADDR=bmp_db"
+      - "OPENBMP_REST_PORT=8001"
+      - "OPENBMP_REST_USER=openbmp"
+      - "OPENBMP_REST_PASSWORD=CiscoRA"
       - "NETWORK_RIB_REST_PORT=4000"
       - "NETWORK_RIB_REST_USER=juniper"
       - "NETWORK_RIB_REST_PASSWORD=juniper"
