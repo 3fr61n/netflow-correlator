@@ -2,7 +2,7 @@ version: '2'
 services:
 
   kafka:
-    build: kafka/
+    image: openbmp/kafka
     container_name: kafka
     environment:
       - "KAFKA_FQDN=kafka"
@@ -47,7 +47,7 @@ services:
     depends_on:
       - kafka
 
-  network-rib:
+  network-rib_1:
     build: network-rib/
     container_name: network-rib
     environment:
@@ -56,8 +56,6 @@ services:
       - "NETWORK_RIB_REST_API_PASSWORD=juniper"
     volumes:
       - /etc/localtime:/etc/localtime
-    ports:
-      - "4000:4000"
     expose:
       - "4000"
 
@@ -68,18 +66,18 @@ services:
       - "KAFKA_ADDR=kafka"
       - "KAFKA_PORT=9092"
       - "KAFKA_CONSUMER_TOPIC=netflow_1"
-      - "OPENBMP_REST_ADDR=bmp_db_1"
-      - "OPENBMP_REST_PORT=8001"
-      - "OPENBMP_REST_USER=openbmp"
-      - "OPENBMP_REST_PASSWORD=CiscoRA"
+      - "NETWORK_RIB_REST_API_ADDR=network-rib_1"
+      - "NETWORK_RIB_REST_API_PORT=4000"
+      - "NETWORK_RIB_REST_API_USER=juniper"
+      - "NETWORK_RIB_REST_API_PASSWORD=juniper"
       - "STATSD_METRICS=true"
       - "STATSD_HOST=213.99.17.76"
       - "STATSD_PORT=8125"
+      - "PATH_ANALYSIS=True"
     volumes:
       - /etc/localtime:/etc/localtime
     depends_on:
       - kafka
-      - bmp_db_1
 
 #  netflow-correlator_2:
 #    build: netflow-correlator/
@@ -93,7 +91,7 @@ services:
 #      - "OPENBMP_REST_USER=openbmp"
 #      - "OPENBMP_REST_PASSWORD=CiscoRA"
 #      - "STATSD_METRICS=true"
-#      - "STATSD_HOST=213.99.17.76"
+#      - "STATSD_HOST=172.30.121.19"
 #      - "STATSD_PORT=8125"
 #    volumes:
 #      - /etc/localtime:/etc/localtime
@@ -143,21 +141,6 @@ services:
     ports:
      - "9995:9995/udp"
 
-#  netflow-collector_dummy:
-#    build: netflow-collector/
-#    volumes:
-#      - /etc/localtime:/etc/localtime:ro
-#    environment:
-#     - "SERVICES_CLIENT=9995"
-#     - "KAFKA_ADDR=xxxxx"
-#     - "KAFKA_PORT=9092"
-#     - "KAFKA_PRODUCER_TOPIC=xxxxx"
-#     - "NETFLOW_PORT=8888"
-#    expose:
-#      - "9995/udp"
-#    depends_on:
-#      - kafka
-
 
 #######################
 # Named container     #
@@ -166,7 +149,6 @@ services:
 volumes:
   # Named volume
   mysql_1:
-  mysql_2:
   kafka:
   bmp_collector:
 

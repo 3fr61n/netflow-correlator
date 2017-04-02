@@ -13,7 +13,7 @@ juniper2 = {
     'username': 'lab',
     'password': 'lab123',
     'port': 22,
-    'verbose': False,
+    'verbose': True,
 }
 
 juniper3 = {
@@ -22,12 +22,22 @@ juniper3 = {
     'username': 'lab',
     'password': 'lab123',
     'port': 22,
-    'verbose': False,
+    'verbose': True,
 }
 
+juniper5 = {
+    'device_type': 'juniper',
+    'ip':   '192.168.255.5',
+    'username': 'lab',
+    'password': 'lab123',
+    'port': 22,
+    'verbose': True,
+}
 
 all_devices = [
     juniper1,
     juniper2,
     juniper3,
+    juniper5,
 ]
+

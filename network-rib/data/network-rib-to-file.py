@@ -19,19 +19,21 @@ pnhs = {}
 status = {}
 peer_hash_ids = {}
 
-#openbmp_rest_address = socket.gethostbyname(os.environ['OPENBMP_REST_ADDR'])
-#openbmp_rest_port = os.environ['OPENBMP_REST_PORT']
-#openbmp_rest_user = os.environ['OPENBMP_REST_USER']
-#openbmp_rest_password = os.environ['OPENBMP_REST_PASSWORD']
-#openbmp_rest_auth=HTTPBasicAuth(openbmp_rest_user, openbmp_rest_password)
-#openbmp_rest_api_base_url='http://'+openbmp_rest_address+':'+openbmp_rest_port
-
-openbmp_rest_address = 'bmp_db_1'
-openbmp_rest_port = '8001'
-openbmp_rest_user = "openbmp"
-openbmp_rest_password = "CiscoRA"
+openbmp_rest_address = socket.gethostbyname(os.environ['OPENBMP_REST_ADDR'])
+openbmp_rest_port = os.environ['OPENBMP_REST_PORT']
+openbmp_rest_user = os.environ['OPENBMP_REST_USER']
+openbmp_rest_password = os.environ['OPENBMP_REST_PASSWORD']
 openbmp_rest_auth=HTTPBasicAuth(openbmp_rest_user, openbmp_rest_password)
 openbmp_rest_api_base_url='http://'+openbmp_rest_address+':'+openbmp_rest_port
+openbmp_rest_routes_per_query_limit = os.environ['OPENBMP_REST_ROUTES_PER_QUERY_LIMIT']
+
+#openbmp_rest_address = 'bmp_db_1'
+#openbmp_rest_port = '8001'
+#openbmp_rest_user = "openbmp"
+#openbmp_rest_password = "CiscoRA"
+#openbmp_rest_auth=HTTPBasicAuth(openbmp_rest_user, openbmp_rest_password)
+#openbmp_rest_api_base_url='http://'+openbmp_rest_address+':'+openbmp_rest_port
+#openbmp_rest_routes_per_query_limit = 1000
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,18 +44,6 @@ if getattr(sys, 'frozen', False):
 else:
     # unfrozen
     BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-
-# For each bgp_peer
-   # gel All rib, 
-        # populate ribs with prefix + pnh
-        # populate pnhs with just pnhs
-        # use the maping file to copy/clone clients with related RR
-# For each bgp peer on ribs
-    # for each pnh on pnhs['bgp-peer'
-        # resolve pnh on install
-        # if not
-        # resolve pnh on igp
-        # populate ALL nh on ribs and pnh tables (calculate weitgs or %)
 
 def get_peer_hash_ids():
     # Refresh peer_hash_ids dictionary for latter usage 
@@ -104,7 +94,7 @@ def get_rib_from_peer(**kwargs):
     router_bgp_rib = {}
     router_bgp_pnhs = {}
     
-    get_peer_rib_url = openbmp_rest_api_base_url+'/db_rest/v1/rib/peer/'+peer_hash_id+"?limit=10000"
+    get_peer_rib_url = openbmp_rest_api_base_url+'/db_rest/v1/rib/peer/'+peer_hash_id+"?limit="+str(openbmp_rest_routes_per_query_limit)
     # We need to check the 'limit > 1000'
     #http://172.30.121.19:8001/db_rest/v1/rib/peer/cc04276117a9c9016103fe6ced642f4e/lookup/20.0.12.81
     logger.info('Performing rest api request: %s', get_peer_rib_url)
@@ -191,7 +181,7 @@ def resolve_all_pnh (**kwargs):
 
 def export_rib_to_file(**kwargs):
     global ribs
-    output_directory = '/var/tmp/'
+    output_directory = '/data/'
     ribs_output_file = kwargs['ribs_output_file']
     pnhs_output_file = kwargs['pnhs_output_file']
     with open(output_directory + ribs_output_file, 'w') as yaml_file:
@@ -212,4 +202,3 @@ for peer_ip in pnhs:
     resolve_all_pnh(router=peer_ip)
 
 export_rib_to_file(ribs_output_file='ribs.yaml',pnhs_output_file='pnhs.yaml')
-

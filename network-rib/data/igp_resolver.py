@@ -84,7 +84,7 @@ def Dijkstra(g,start,end=None):
 def _shortestPath(g,start,end):
 	
 	d,p = Dijkstra(g,start,end)
-	print p
+	#print p
 	path = [[end]]
 	while True:
 		if len(p[end]) > 1:
@@ -117,9 +117,11 @@ def main():
 
 	result = AutoVivification()
 	graph = get_link_state_graph()
+	print graph
 	nodes = graph.keys()
 	for nodeA in nodes:
 		for nodeB in nodes:
+			#print nodeA,nodeB
 			if nodeB != nodeA:
 				result[nodeA][nodeB] = {nodeA:{'endpoint':_shortestPath(graph,nodeA,nodeB)[1],'install':'','lsp_name':''}}
 	#return result

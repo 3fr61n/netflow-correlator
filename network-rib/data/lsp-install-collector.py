@@ -26,7 +26,7 @@ def worker_commands(a_device, mp_queue):
 
     identifier = '{ip}'.format(**a_device)
     return_data = {}
-
+    cmd = ''
     command_jnpr = 'show configuration protocols mpls | display set'
     command_csco = 'show  running-config  formal interface | i tunnel'
     
@@ -35,7 +35,7 @@ def worker_commands(a_device, mp_queue):
         net_connect = SSHClass(**a_device)
         if net_connect.device_type == 'juniper':
             cmd = net_connect.send_command(command_jnpr)
-        elif net_connect.device_type == 'cisco':
+        elif net_connect.device_type == 'cisco_ios':
             cmd = net_connect.send_command(command_csco)
     except (NetMikoTimeoutException, NetMikoAuthenticationException) as e:
         return_data[identifier] = False
@@ -43,9 +43,9 @@ def worker_commands(a_device, mp_queue):
         # Add data to the queue (for parent process)
         mp_queue.put(return_data)
         return None
-
+    #print cmd
     return_data[identifier] = pytricia.PyTricia()
-    return_data[identifier] = generate_json(cmd,identifier,'juniper')
+    return_data[identifier] = generate_json(cmd,identifier,net_connect.device_type)
     mp_queue.put(return_data)
 
 
@@ -78,16 +78,18 @@ def generate_json(cmd,ip_host,device_type):
    ################### CISCO REGEX #############################
 
     cisco_lsp_name = "(?:signalled-name)(\s+.*)"
-    regex_cisco_lsp_name = re.search(cisco_lsp_name, cisco_config,re.MULTILINE)
-    lsp_name = regex_cisco_lsp_name.group(1).strip()
+    regex_cisco_lsp_name = re.search(cisco_lsp_name, cmd,re.MULTILINE)
+    if regex_cisco_lsp_name:
+        lsp_name = regex_cisco_lsp_name.group(1).strip()
 
     cisco_install = "(?:autoroute)(?: destination)(.*)"
-    regex_cisco_install = re.search(cisco_install, cisco_config,re.MULTILINE)
-    install = regex_cisco_install.group(1).strip()
+    regex_cisco_install = re.search(cisco_install, cmd,re.MULTILINE)
+    if regex_cisco_install:
+        install = regex_cisco_install.group(1).strip()
 
     cisco_endpoint = "(?:tunnel-te[0-9]+)(?: destination)(.*)"
-    regex_cisco_endpoint  = re.search(cisco_endpoint, cisco_config,re.MULTILINE)
-    match_endpoint = regex_cisco_endpoint.group(1).strip()
+    match_endpoint  = re.findall(cisco_endpoint, cmd,re.MULTILINE)
+    #match_endpoint = regex_cisco_endpoint.group(1).strip()
 
 
    rib[install] = {'install':install,'endpoint':match_endpoint,'lsp_name':lsp_name}
@@ -136,5 +138,7 @@ def main():
 if __name__ == '__main__':
 
     main()
+
+
 
 
