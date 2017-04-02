@@ -14,6 +14,8 @@ plugins: kafka
 !aggregate: src_host,dst_host,src_port,dst_port,timestamp_start,timestamp_end, peer_src_ip, peer_dst_ip, in_iface, out_iface, proto, tos, src_as, dst_as, tcpflags
 aggregate: src_host,dst_host,peer_src_ip
 nfacctd_disable_checks: true
+!nfacctd_renormalize: true
+!sampling_map: /data/sampling.map
 pmacctd_pipe_size: 1024000000
 plugin_buffer_size: 1024000
 kafka_output: json
