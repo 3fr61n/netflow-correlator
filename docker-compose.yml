@@ -49,7 +49,7 @@ services:
 
   network-rib_1:
     build: network-rib/
-    container_name: network-rib
+    container_name: network-rib_1
     environment:
       - "OPENBMP_REST_ADDR=bmp_db"
       - "OPENBMP_REST_PORT=8001"
