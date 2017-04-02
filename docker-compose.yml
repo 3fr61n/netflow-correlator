@@ -51,9 +51,9 @@ services:
     build: network-rib/
     container_name: network-rib
     environment:
-      - "NETWORK_RIB_REST_API_PORT=4000"
-      - "NETWORK_RIB_REST_API_USER=juniper"
-      - "NETWORK_RIB_REST_API_PASSWORD=juniper"
+      - "NETWORK_RIB_REST_PORT=4000"
+      - "NETWORK_RIB_REST_USER=juniper"
+      - "NETWORK_RIB_REST_PASSWORD=juniper"
     volumes:
       - /etc/localtime:/etc/localtime
     expose:
@@ -66,10 +66,10 @@ services:
       - "KAFKA_ADDR=kafka"
       - "KAFKA_PORT=9092"
       - "KAFKA_CONSUMER_TOPIC=netflow_1"
-      - "NETWORK_RIB_REST_API_ADDR=network-rib_1"
-      - "NETWORK_RIB_REST_API_PORT=4000"
-      - "NETWORK_RIB_REST_API_USER=juniper"
-      - "NETWORK_RIB_REST_API_PASSWORD=juniper"
+      - "NETWORK_RIB_REST_ADDR=network-rib_1"
+      - "NETWORK_RIB_REST_PORT=4000"
+      - "NETWORK_RIB_REST_USER=juniper"
+      - "NETWORK_RIB_REST_PASSWORD=juniper"
       - "STATSD_METRICS=true"
       - "STATSD_HOST=213.99.17.76"
       - "STATSD_PORT=8125"
