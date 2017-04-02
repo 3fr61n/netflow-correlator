@@ -5,7 +5,7 @@ USER root
 ## To be removed once change merge upstream
 RUN apk add --no-cache ca-certificates && \
     update-ca-certificates
-RUN apk add --no-cache wget git bind-tools supervisor python py-pip build-base tcpdump nginx uwsgi uwsgi-python 
+RUN apk add --no-cache wget git bind-tools supervisor python py-pip build-base tcpdump nginx uwsgi uwsgi-python openssh
 RUN pip install --upgrade pip
 
 RUN pip install flask pytricia netaddr gunicorn uwsgi statsd 
