@@ -2,7 +2,7 @@ version: '2'
 services:
 
   kafka:
-    image: openbmp/kafka
+    image: openbmp/kafka:build-22
     container_name: kafka
     environment:
       - "KAFKA_FQDN=kafka"
