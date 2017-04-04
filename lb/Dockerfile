@@ -1,5 +1,7 @@
-FROM nginx:1.11.1-alpine
+FROM nginx:1.11.12-alpine
 MAINTAINER Damien Garros <dgarros@gmail.com>
+
+USER root
 
 RUN apk update
 RUN apk add wget tcpdump
@@ -14,7 +16,5 @@ COPY nginx.conf.tpl /etc/nginx/nginx.conf.tpl
 RUN chmod 777 /entrypoint.sh
 
 ENV DOCKER_HOST unix:///tmp/docker.sock
-
-EXPOSE 6000/udp
 
 CMD /entrypoint.sh

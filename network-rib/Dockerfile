@@ -8,7 +8,7 @@ RUN apk add --no-cache ca-certificates && \
 RUN apk add --no-cache wget git bind-tools supervisor python py-pip build-base tcpdump nginx uwsgi uwsgi-python openssh
 RUN pip install --upgrade pip
 
-RUN pip install flask pytricia netaddr gunicorn uwsgi statsd 
+RUN pip install flask pytricia netaddr gunicorn statsd requests
 RUN pip install netmiko
 ENV APP_DIR /data
 

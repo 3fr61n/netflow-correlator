@@ -29,7 +29,7 @@ stream {
         proxy_timeout 1s;
         proxy_bind $remote_addr transparent;
         proxy_responses 0;
-        error_log lb_error.log;
+        error_log lb_error.log debug;
     }
 }
 {{ end }}

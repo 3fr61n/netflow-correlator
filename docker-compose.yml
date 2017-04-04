@@ -58,10 +58,11 @@ services:
       - "NETWORK_RIB_REST_PORT=4000"
       - "NETWORK_RIB_REST_USER=juniper"
       - "NETWORK_RIB_REST_PASSWORD=juniper"
+      - "OPENBMP_REST_ROUTES_PER_QUERY_LIMIT=900000"
     volumes:
       - /etc/localtime:/etc/localtime
-    expose:
-      - "4000"
+    ports:
+      - "4000:4000"
 
   netflow-correlator_1:
     build: netflow-correlator/
@@ -103,6 +104,7 @@ services:
 #      - kafka
 #      - bmp_db_2
 
+
   netflow-collector_1:
     build: netflow-collector/
     container_name: netflow-collector_1
@@ -110,14 +112,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
      - "SERVICES_CLIENT=9995"
-     - "KAFKA_ADDR=kafka"
-     - "KAFKA_PORT=9092"
-     - "KAFKA_PRODUCER_TOPIC=netflow_1"
+     - "MYSQL_USER=juniper"
+     - "MYSQL_USER_PASSWORD=juniper123"
+     - "MYSQL_PASSWORD=juniper123"
+     - "MYSQL_DATABASE=pmacct"
+     - "MYSQL_PORT=3306"
      - "NETFLOW_PORT=9995"
     expose:
       - "9995/udp"
-    depends_on:
-      - kafka
+      - "3306/tcp"
 
 #  netflow-collector_2:
 #    build: netflow-collector/

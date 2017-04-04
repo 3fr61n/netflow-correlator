@@ -1,0 +1,14 @@
+create table tm_%Y%m%d_%H%M (
+        peer_ip_src char(15) default '0.0.0.0', 
+        net_src char(15) default '0.0.0.0',
+        mask_src varchar(5) default '/0', 
+        net_dst char(15) default '0.0.0.0',
+        mask_dst varchar(5) default '/0', 
+        packets int (10) unsigned,
+        bytes bigint(20) unsigned, 
+        sampling_rate int(6) unsigned,
+        stamp_inserted datetime,
+        stamp_updated datetime,
+
+        PRIMARY KEY (peer_ip_src, net_src, net_dst, mask_src, mask_dst, stamp_inserted)
+);

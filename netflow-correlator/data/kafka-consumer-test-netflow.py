@@ -17,8 +17,3 @@ for message in consumer:
     json_thing = str(message.value.decode('ascii'))
     netflow_samples = json.loads(json_thing)
     pprint(netflow_samples)
-#    print(json.dumps(json_thing, sort_keys=True, indent=4))
-#    print ("%s:%d:%d: key=%s value=%s" % (message.topic, message.partition,
-#                                          message.offset, message.key,
-#                                          message.value))
-
