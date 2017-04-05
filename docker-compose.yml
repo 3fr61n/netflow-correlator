@@ -55,55 +55,18 @@ services:
       - "OPENBMP_REST_PORT=8001"
       - "OPENBMP_REST_USER=openbmp"
       - "OPENBMP_REST_PASSWORD=CiscoRA"
-      - "NETWORK_RIB_REST_PORT=4000"
-      - "NETWORK_RIB_REST_USER=juniper"
-      - "NETWORK_RIB_REST_PASSWORD=juniper"
       - "OPENBMP_REST_ROUTES_PER_QUERY_LIMIT=900000"
-    volumes:
-      - /etc/localtime:/etc/localtime
-    ports:
-      - "4000:4000"
-
-  netflow-correlator_1:
-    build: netflow-correlator/
-    container_name: netflow-correlator_1
-    environment:
-      - "KAFKA_ADDR=kafka"
-      - "KAFKA_PORT=9092"
-      - "KAFKA_CONSUMER_TOPIC=netflow_1"
-      - "NETWORK_RIB_REST_ADDR=network-rib_1"
-      - "NETWORK_RIB_REST_PORT=4000"
-      - "NETWORK_RIB_REST_USER=juniper"
-      - "NETWORK_RIB_REST_PASSWORD=juniper"
-      - "STATSD_METRICS=true"
+      - "NETFLOW_MYSQL_HOST=netflow-collector_1"
+      - "NETFLOW_MYSQL_USER_PASSWORD=juniper123"
+      - "NETFLOW_MYSQL_PASSWORD=juniper123"
+      - "NETFLOW_MYSQL_DATABASE=pmacct"
+      - "NETFLOW_MYSQL_PORT=3306"
+      - "PATH_ANALYSIS=True"
+      - "STATSD_METRICS=True"
       - "STATSD_HOST=213.99.17.76"
       - "STATSD_PORT=8125"
-      - "PATH_ANALYSIS=True"
     volumes:
       - /etc/localtime:/etc/localtime
-    depends_on:
-      - kafka
-
-#  netflow-correlator_2:
-#    build: netflow-correlator/
-#    container_name: netflow-correlator_2
-#    environment:
-#      - "KAFKA_ADDR=kafka"
-#      - "KAFKA_PORT=9092"
-#      - "KAFKA_CONSUMER_TOPIC=netflow_2"
-#      - "OPENBMP_REST_ADDR=bmp_db_2"
-#      - "OPENBMP_REST_PORT=8001"
-#      - "OPENBMP_REST_USER=openbmp"
-#      - "OPENBMP_REST_PASSWORD=CiscoRA"
-#      - "STATSD_METRICS=true"
-#      - "STATSD_HOST=172.30.121.19"
-#      - "STATSD_PORT=8125"
-#    volumes:
-#      - /etc/localtime:/etc/localtime
-#    depends_on:
-#      - kafka
-#      - bmp_db_2
-
 
   netflow-collector_1:
     build: netflow-collector/
@@ -111,42 +74,26 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
     environment:
-     - "SERVICES_CLIENT=9995"
-     - "MYSQL_USER=juniper"
-     - "MYSQL_USER_PASSWORD=juniper123"
-     - "MYSQL_PASSWORD=juniper123"
-     - "MYSQL_DATABASE=pmacct"
-     - "MYSQL_PORT=3306"
-     - "NETFLOW_PORT=9995"
+      - "SERVICES_CLIENT=9995"
+      - "MYSQL_USER=juniper"
+      - "MYSQL_USER_PASSWORD=juniper123"
+      - "MYSQL_PASSWORD=juniper123"
+      - "MYSQL_DATABASE=pmacct"
+      - "MYSQL_PORT=3306"
+      - "NETFLOW_PORT=9995"
     expose:
       - "9995/udp"
       - "3306/tcp"
-
-#  netflow-collector_2:
-#    build: netflow-collector/
-#    container_name: netflow-collector_2
-#    volumes:
-#      - /etc/localtime:/etc/localtime:ro
-#    environment:
-#     - "SERVICES_CLIENT=9995"
-#     - "KAFKA_ADDR=kafka"
-#     - "KAFKA_PORT=9092"
-#     - "KAFKA_PRODUCER_TOPIC=netflow_2"
-#     - "NETFLOW_PORT=9995"
-#    expose:
-#      - "9995/udp"
-#    depends_on:
-#      - kafka
 
   lb:
     build: lb/
     container_name: lb
     volumes:
-     - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     environment:
-     - "SERVICES_LB=9995"
+      - "SERVICES_LB=9995"
     ports:
-     - "9995:9995/udp"
+      - "9995:9995/udp"
 
 
 #######################
