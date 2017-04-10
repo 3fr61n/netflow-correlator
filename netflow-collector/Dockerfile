@@ -37,6 +37,7 @@ RUN apt-get -y update && \
             inetutils-ping \
             dnsutils \
             gettext \
+            rsyslog \
             tcpdump && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
