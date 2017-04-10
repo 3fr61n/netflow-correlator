@@ -1,6 +1,6 @@
-#!flask/bin/python
+#!usr/bin/python
 from __future__ import division
-from flask import Flask, jsonify
+#from flask import Flask, jsonify
 import pytricia
 from netaddr import valid_ipv4
 import os
@@ -36,9 +36,9 @@ BASE_DIR_INPUT = '/data/'
 RIBS_FILENAME = 'ribs.yaml'
 PNHS_FILENAME = 'pnhs.yaml'
 BGP_RIB_MAPPING_FILENAME = 'bgp_rib_mapping.yaml'
-REST_API_PORT = int(os.environ['NETWORK_RIB_REST_PORT'])
-path_analysis = os.environ['PATH_ANALYSIS']
-
+#REST_API_PORT = int(os.environ['NETWORK_RIB_REST_PORT'])
+#path_analysis = os.environ['PATH_ANALYSIS']
+path_analysis = True
 #statsd_metrics = os.environ['STATSD_METRICS']
 statsd_address = os.environ['STATSD_HOST']
 statsd_port = os.environ['STATSD_PORT']
@@ -49,9 +49,9 @@ statsd_client = statsd.StatsClient(statsd_address, statsd_port)
 #NETFLOW_DB_PASSWORD = os.environ['NETFLOW_DB_PASSWORD']
 #NETFLOW_DB = os.environ['NETFLOW_DB']
 
-NETFLOW_DB_HOST = '172.20.0.2'
-NETFLOW_DB_USER = 'efrain'
-NETFLOW_DB_PASSWORD = 'efrain'
+NETFLOW_DB_HOST = 'netflow-collector_1'
+NETFLOW_DB_USER = 'juniper'
+NETFLOW_DB_PASSWORD = 'juniper123'
 NETFLOW_DB = 'pmacct'
 
 NETFLOW_DB_CONFIG = {
@@ -315,32 +315,50 @@ def analyze_netflow_samples (**kwargs):
     rows = cursor.fetchmany(size=max_rows_to_fetch)
     while rows:
         for row in rows:
+
+#        peer_ip_src char(15) default '0.0.0.0', 
+#        net_src char(15) default '0.0.0.0',
+#        mask_src varchar(5) default '/0', 
+#        net_dst char(15) default '0.0.0.0',
+#        mask_dst varchar(5) default '/0', 
+#        packets int (10) unsigned,
+#        bytes bigint(20) unsigned, 
+#        sampling_rate int(6) unsigned,
+#        stamp_inserted datetime,
+#        stamp_updated datetime,
+
+
             peer_ip_src = row[0]
-            ip_src = row[2]
-            net_src = row[3]
-            mask_src = row[4]
-            ip_dst = row[5]
-            net_dst = row[6]
-            mask_dst = row[7]
-            packets_sent = row[8]
-            bytes_sent = row[9]
-            sampling_rate = row[10]
-            stamp_inserted = row[11]
-            stamp_updated = row[12]
+#            ip_src = row[2]
+            net_src = row[1]
+            mask_src = row[2]
+#            ip_dst = row[5]
+            net_dst = row[3]
+            mask_dst = row[4]
+            packets = row[5]
+            bytes = row[6]
+            sampling_rate = row[7]
+            stamp_inserted = row[8]
+            stamp_updated = row[9]
             prefix_src = net_src + '/' + mask_src
             prefix_dst = net_dst + '/' + mask_dst
 
+            packets_sent = packets * sampling_rate
+            bytes_sent = bytes * sampling_rate
+
             rib_lookup_resp = rib_lookup(peer_tmp=peer_ip_src ,prefix_tmp=prefix_dst,rest_api=False)
-            pprint(rib_lookup_resp)
+            #pprint(rib_lookup_resp)
             if rib_lookup_resp.has_key('pnh'):
                 bgp_next_hop = rib_lookup_resp['pnh']
                 statsd_client.incr('netflow.stats,result=succeed,action=iplookup')
-                statsd_client.incr('netflow.theorical_matrix_bytes,src_PE='+peer_ip_src+',dst_PE='+bgp_next_hop+',tm='+table,count=bytes_sent)
-                statsd_client.incr('netflow.theorical_matrix_packets,src_PE='+peer_ip_src+',dst_PE='+bgp_next_hop+',tm='+table,count=packets_sent)   
+                statsd_client.incr('netflow.theorical_matrix_bytes,src_PE='+peer_ip_src+',dst_PE='+bgp_next_hop,count=bytes_sent)
+                statsd_client.incr('netflow.theorical_matrix_packets,src_PE='+peer_ip_src+',dst_PE='+bgp_next_hop,count=packets_sent)   
+#                statsd_client.incr('netflow.theorical_matrix_bytes,src_PE='+peer_ip_src+',dst_PE='+bgp_next_hop+',tm='+table,count=bytes_sent)
+#                statsd_client.incr('netflow.theorical_matrix_packets,src_PE='+peer_ip_src+',dst_PE='+bgp_next_hop+',tm='+table,count=packets_sent)   
                 logger.info('netflow.theorical_matrix_packets,src_PE=%s,dst_PE=%s,prefix=%s,tm=%s,count=%s' %  (peer_ip_src,bgp_next_hop,prefix_dst,table,packets_sent))
                 if path_analysis:
                     path_analysis_resp=analyze_path_tmp(peer_id=peer_ip_src,prefix=prefix_dst,rest_api=False)
-                    pprint(rib_lookup_resp)
+                    #pprint(rib_lookup_resp)
                     if path_analysis_resp.has_key('error'):
                         logger.error('Error message returned:  %s' % (path_analysis_resp['error']))
                         statsd_client.incr('netflow.stats,result=error,action=analyze_path')
@@ -351,8 +369,10 @@ def analyze_netflow_samples (**kwargs):
                             weighted_packets_sent = packets_sent * endpoint['weight']
                             dst_PE = endpoint['endpoint']
                             logger.info('netflow.real_matrix_packets,src_PE=%s,dst_PE=%s,prefix=%s,tm=%s,count=%s,fraction=%s' %  (peer_ip_src,dst_PE,prefix_dst,table,weighted_packets_sent,endpoint['weight']))
-                            statsd_client.incr('netflow.real_matrix_bytes,src_PE='+peer_ip_src+',dst_PE='+dst_PE+',tm='+table,count=weighted_bytes_sent)   
-                            statsd_client.incr('netflow.real_matrix_packets,src_PE='+peer_ip_src+',dst_PE='+dst_PE+',tm='+table,count=weighted_packets_sent)   
+                            statsd_client.incr('netflow.real_matrix_bytes,src_PE='+peer_ip_src+',dst_PE='+dst_PE,count=weighted_bytes_sent)   
+                            statsd_client.incr('netflow.real_matrix_packets,src_PE='+peer_ip_src+',dst_PE='+dst_PE,count=weighted_packets_sent)   
+#                            statsd_client.incr('netflow.real_matrix_bytes,src_PE='+peer_ip_src+',dst_PE='+dst_PE+',tm='+table,count=weighted_bytes_sent)   
+#                            statsd_client.incr('netflow.real_matrix_packets,src_PE='+peer_ip_src+',dst_PE='+dst_PE+',tm='+table,count=weighted_packets_sent)   
 
 
         rows = cursor.fetchmany(size=max_rows_to_fetch)
@@ -365,30 +385,32 @@ if __name__ == '__main__':
     update_bgp_mapping(rest_api=False)
 
     last_table_read = ""
-    #while True:
-    try:
-        logger.info('Connecting to database %s in server %s', NETFLOW_DB,NETFLOW_DB_HOST)
-        myConnection = pymysql.connect( **NETFLOW_DB_CONFIG )
-        # Get all tables with netflow data
-        logger.info('Extracting tables with netflow samples tables on server %s',NETFLOW_DB_HOST)
-        tables = get_tables (conn=myConnection)
-        last_table_read_index = tables.index(last_table_read) if last_table_read in tables else 0
-        if len(tables[last_table_read_index:-1]) > 1:
-            for table in tables[last_table_read_index:-1]:
+    while True:
+        try:
+            logger.info('Connecting to database %s in server %s', NETFLOW_DB,NETFLOW_DB_HOST)
+            myConnection = pymysql.connect( **NETFLOW_DB_CONFIG )
+            # Get all tables with netflow data
+            logger.info('Extracting tables with netflow samples tables on server %s',NETFLOW_DB_HOST)
+            tables = get_tables (conn=myConnection)
+#            last_table_read_index = tables.index(last_table_read) if last_table_read in tables else 0       
+#            if len(tables[last_table_read_index:-1]) > 1:
+#                for table in tables[last_table_read_index:-1]:
+            if ((len(tables) > 1) and (last_table_read != tables[-2])):
+                table = tables[-2]
                 logger.info('Processing netflow samples from table %s in server %s',table,NETFLOW_DB_HOST)
                 analyze_netflow_samples(conn=myConnection,table=table)
-                #last_table_read = table
-        else:
-            logger.info('All available tables were already processed on %s, so nothing to do, waiting for new tables',NETFLOW_DB_HOST)
-        # We should delete old tables
-
-    except Exception, e:
-        logger.error('Got error {!r}, errno is {}'.format(e, e.args[0]))
-        logging.exception(e)
-        # This timer should be tunned
-        time.sleep(30)
-        pass
-    #    time.sleep(30)
+                last_table_read = table
+            else:
+                logger.info('All available tables were already processed on %s, so nothing to do, waiting for new tables',NETFLOW_DB_HOST)
+            # We should delete old tables
+    
+        except Exception, e:
+            logger.error('Got error {!r}, errno is {}'.format(e, e.args[0]))
+            logging.exception(e)
+            # This timer should be tunned
+            pass            
+        logger.info('Sleeping until next round')
+        time.sleep(300)
             
     # Start loops each 5 min
         # Check if netflow database is up and running

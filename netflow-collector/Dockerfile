@@ -55,4 +55,3 @@ COPY data /data
 WORKDIR /data
 
 CMD ["/usr/bin/supervisord"]
-

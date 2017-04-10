@@ -13,6 +13,7 @@ events {
 # Load balance UDP-based traffic across two servers
 stream {
     upstream udp_{{$port}} {
+                #hash $remote_addr consistent;
       {{ range $container := $containers }}
         {{ range $address := $container.Addresses }}
                 {{ if eq $address.Port $port }}
