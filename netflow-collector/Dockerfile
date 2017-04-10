@@ -37,6 +37,9 @@ RUN apt-get -y update && \
             inetutils-ping \
             dnsutils \
             gettext \
+	    rsyslog \
+	    openssh-server \ 
+	    tshark \ 
             tcpdump && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -45,9 +48,11 @@ RUN apt-get -y update && \
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY init.sh /tmp
 COPY mysqld.cnf /etc/mysql/mysql.conf.d/
+COPY sshd_config /etc/ssh
 
 RUN mkdir /data
 COPY data /data
 WORKDIR /data
 
 CMD ["/usr/bin/supervisord"]
+

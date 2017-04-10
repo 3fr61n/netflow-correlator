@@ -2,12 +2,11 @@
 
 MYSQL="mysql -u root -p$MYSQL_PASSWORD"
 
-##
-## mysql 
-##
-
-# start service
+# start services
 service mysql start
+service ssh start
+service rsyslog start
+
 
 ## permissions for remote connection
 $MYSQL << EOF
@@ -19,4 +18,10 @@ EOF
 ## create initial database and bgp table
 $MYSQL < /data/sql/pmacct-create-db_bgp_v1.mysql
 $MYSQL < /data/sql/pmacct-grant-db.mysql
+
+## root permission to ssh to this container
+echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+bash /data/start-input-netflow.sh
+echo "root:$ROOT_PASSWORD" | chpasswd
 

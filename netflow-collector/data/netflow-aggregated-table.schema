@@ -9,6 +9,7 @@ create table tm_%Y%m%d_%H%M (
         sampling_rate int(6) unsigned,
         stamp_inserted datetime,
         stamp_updated datetime,
-
-        PRIMARY KEY (peer_ip_src, net_src, net_dst, mask_src, mask_dst, stamp_inserted)
+	id int(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+        PRIMARY KEY (id),
+        INDEX nfacct_idx (peer_ip_src, net_dst, mask_dst, stamp_inserted)
 );
